@@ -2,6 +2,8 @@ import express, {type Express, Request, Response} from "express";
 import cookieParser from "cookie-parser"
 import cors from "cors"
 import { env } from "./config/env.js";
+import { globalErrorHandler } from "./middleware/error.middleware.js";
+import authRouter from "./modules/auth/auth.route.js";
 
 export const app: Express = express();
 
@@ -19,3 +21,6 @@ app.get("/health-check",(req:Request,res:Response)=>{
         }
     )
 })
+
+app.use("/api/v1/auth", authRouter)
+app.use(globalErrorHandler)

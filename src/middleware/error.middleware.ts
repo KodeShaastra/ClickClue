@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { z, ZodError } from "zod";
 import { env } from "../config/env.js";
 
 export const globalErrorHandler = (
@@ -7,6 +8,15 @@ export const globalErrorHandler = (
   res: Response,
   next: NextFunction,
 ) => {
+  // bad input from the user (thrown by schema.parse) → 400 with a list of what's wrong
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      status: "fail",
+      message: "Invalid input",
+      errors: z.flattenError(err).fieldErrors,
+    });
+  }
+
   let error = { ...err };
   error.message = err.message;
 
@@ -14,16 +24,16 @@ export const globalErrorHandler = (
   error.status = error.status || "error";
 
   if (env.NODE_ENV === "development") {
-    res.status(error.statusCode).json({
+    return res.status(error.statusCode).json({
       status: error.status,
       message: error.message,
-      stack: error.stack,
+      stack: err.stack,
       error,
     });
   }
   //production error handling
   if (error.isOperational) {
-    res.status(error.statusCode).json({
+    return res.status(error.statusCode).json({
         status: error.status,
         message: error.message,
     })
