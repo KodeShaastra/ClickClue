@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
 import { AppError } from "../../lib/AppError.js";
-import { createUser, findUserByEmail, findUserByUsername } from "./auth.repository.js";
+import { createRefreshToken, createUser, findUserByEmail, findUserByUsername } from "./auth.repository.js";
 import { RegisterUserDto } from "./auth.schema.js";
+import { toUserResponse } from "./auth.mapper.js";
+import { generateAccessToken, generateRefreshToken, getTokenExpiry } from "../../lib/jwt.helper.js";
 
 
 export const registerUser = async(data: RegisterUserDto)=>{
@@ -23,5 +25,18 @@ export const registerUser = async(data: RegisterUserDto)=>{
         password: hashedPassword
     })
 
-    return newUser
+    const accessToken = generateAccessToken(newUser.id)
+    const refreshToken = generateRefreshToken(newUser.id)
+
+    await createRefreshToken({
+        token: refreshToken,
+        userId: newUser.id,
+        expireAt: getTokenExpiry(refreshToken)
+    })
+    
+    return {
+        user: toUserResponse(newUser),
+        accessToken,
+        refreshToken
+    }
 }

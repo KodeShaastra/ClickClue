@@ -3,14 +3,8 @@ import { RegisterUserDto } from "./auth.schema.js"
 
 // Only database code lives here.
 // No checks, no hashing, no errors — that is the service's job.
-
-// The fields we are allowed to send back to the user (never the password)
-const safeUserFields = {
-    id: true,
-    username: true,
-    email: true,
-    createdAt: true,
-}
+// Functions here return the full user (with password).
+// The service removes the password with toUserResponse() before sending it back.
 
 // Returns the full user (with password), or null if not found.
 // The service needs the password later for login.
@@ -24,8 +18,16 @@ export const findUserByUsername = (username: string) => {
 
 // The password must already be hashed by the service before it reaches here.
 export const createUser = (data: RegisterUserDto) => {
-    return prisma.user.create({
-        data,
-        select: safeUserFields,
+    return prisma.user.create({ data })
+}
+
+export const createRefreshToken = (data:{
+    token: string,
+    userId: string,
+    expireAt: Date
+})=>{
+    return prisma.refreshToken.create({
+        data
     })
 }
+

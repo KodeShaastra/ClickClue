@@ -10,7 +10,8 @@ export const app: Express = express();
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin:env.FRONTEND_URL
+    origin:env.FRONTEND_URL,
+    credentials: true
 }))
 
 app.get("/health-check",(req:Request,res:Response)=>{

@@ -29,7 +29,9 @@ model RefreshToken {
   id     String @id @default(uuid())
   token  String @unique
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  expireAt DateTime
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Post {
@@ -37,7 +39,6 @@ model Post {
   title       String
   description String
   imageUrl    String?
-
   userId    String
   createdAd DateTime @default(now())
   updatedAt DateTime @updatedAt
